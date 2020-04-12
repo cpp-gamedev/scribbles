@@ -4,7 +4,8 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 	message(FATAL_ERROR "In-Source Builds Not Allowed")
 endif()
 
-set(CMAKE_BUILD_TYPE Debug)
+set(BUILD_CONFIG Debug)
+set(CMAKE_BUILD_TYPE ${BUILD_CONFIG})
 set(NAME scribbles)
 
 project(${NAME})
