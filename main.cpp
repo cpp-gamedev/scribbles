@@ -20,10 +20,11 @@ int main()
 
 void to_lowercase(char* word)
 {
-	int len = strlen(word);
+	int i = 0;
 
-	for (int i = 0; i < len; ++i)
+	while (*word != '\0')
 	{
 		word[i] = tolower(word[i]);
+		++word;
 	}
 }
