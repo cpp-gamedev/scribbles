@@ -1,7 +1,9 @@
 #include <iostream>
+#include <string>
 
 int main()
 {
-	std::cout << "Heyo\n";
+	std::string_view const test = "Heyo\n";
+	std::cout << test;
 	return 0;
 }
