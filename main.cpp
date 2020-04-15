@@ -4,30 +4,35 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <random>
 
 namespace
 {
-int random_no(unsigned int range)
+size_t randomRange(size_t min, size_t max)
 {
-	srand(time(NULL));
-	int secret_num = rand() % range;
-	return secret_num;
+	static std::random_device device;
+	static std::default_random_engine engine(device());
+	std::uniform_int_distribution<> dist(min, max);
+	return dist(engine);
 }
 
-std::string to_lowercase(std::string_view word)
+std::string to_lowercase(std::string_view const word)
 {
 	std::string lowercased = word.begin();
 	std::transform(word.begin(), word.end(), lowercased.begin(), tolower);
 	return lowercased;
 }
 
-void initialize_combolist(std::stringstream& combo_names, std::vector<std::string>& combo_list)
+std::vector<std::string> initialize_combolist(std::stringstream& combo_names)
 {
+	std::vector<std::string> combo_list;
 	std::string combo_name;
 	while (getline(combo_names, combo_name, ' '))
 	{
 		combo_list.push_back(combo_name);
 	}
+
+	return combo_list;
 }
 
 void display_rules()
@@ -49,99 +54,91 @@ void start_screen()
 
 void ask_for_input(char* dest)
 {
+	std::string word;
 	std::cout << "> ";
-	std::cin >> *dest;
+	std::cin >> word;
+	*dest = word[0];
 	std::cout << "\n";
 }
 
-void update_letters_used(std::vector<int>& score, int pos)
+void update_letters_used(std::vector<int>& score, size_t pos)
 {
 	score[pos]++;
 }
 
-void fill_letter(std::string& word, std::string& hangman, int pos)
+void fill_letter(std::string const& word, std::string& hangman, size_t pos)
 {
 	hangman[pos] = word[pos];
 }
 
-// used to display the next combo name
-void display_combo_name(std::string combo_name)
+void display_next_combo_name(size_t tries, std::vector<std::string> const& combolist)
 {
-	std::cout << combo_name << '\n';
-}
+	size_t combolist_size = combolist.size();
 
-void display_next_combo_name(int tries, std::vector<std::string>& combolist, int combolist_length)
-{
-	if (tries < combolist_length)
+	if (tries < combolist_size)
 	{
-		display_combo_name(combolist[tries]);
+		std::cout << combolist[tries] << '\n';
 	}
 	else
 	{
-		display_combo_name(combolist[combolist_length - 1]);
+		std::cout << combolist[(combolist_size - 1)] << '\n';
 	}
 }
 } // namespace
 
 int main()
 {
-	char usr_input = ' ';
+	char user_input = ' ';
 
-	// # of failed attempts
-	int f_tries = 0;
+	size_t failed_attempts = 0;
 
-	// # of correctly guessed letters
-	int s_tries = 0;
-
-	const int combo_length = 4;
+	size_t correct_letters_guessed = 0;
 
 	// combo system
 	// combo names displayed when letter is correctly guessed
-	std::vector<std::string> s_combos;
-	std::stringstream s_combonames("NICE! ALRIGHT! YESS! AMAZING!");
-	initialize_combolist(s_combonames, s_combos);
+	std::stringstream success_combo_names("NICE! ALRIGHT! YESS! AMAZING!");
+	std::vector<std::string> const success_combo = initialize_combolist(success_combo_names);
 
 	// combo names displayed when letter is not correctly guessed
-	std::vector<std::string> f_combos;
-	std::stringstream f_combonames("ARG! DAMMIT! DARN! NOO!");
-	initialize_combolist(f_combonames, f_combos);
+	std::stringstream failed_combo_names("ARG! DAMMIT! DARN! NOO!");
+	std::vector<std::string> const failed_combos = initialize_combolist(failed_combo_names);
 
 	// Word to be guessed
 	std::string_view const word = "Oxygen";
-	const int len_of_word = word.size();
+	const size_t len_of_word = word.size();
 
 	// used fill a letter in hangman
-	std::string word_copy(word);
+	std::string const word_copy(word);
 
 	// # of tries before game over
-	const int tries = len_of_word + random_no(16);
+	const size_t tries = randomRange(len_of_word, len_of_word + 10);
 
 	// used to check if character guessed exists in word
 	const std::string lowercased = to_lowercase(word);
 
 	// used to draw hangman onto screen
-	std::string hangman(word.size(), '_');
-	std::vector<int> chars_already_guessed(word.size(), 0);
+	std::string hangman(len_of_word, '_');
+	std::vector<int> chars_already_guessed(len_of_word, 0);
 
 	// GAME LOOP
 	start_screen();
-	while (f_tries != tries)
+	while (failed_attempts != tries)
 	{
 		std::cout << hangman << "\n\n";
 
-		ask_for_input(&usr_input);
+		ask_for_input(&user_input);
 
-		if (usr_input == '0')
+		if (user_input == '0')
 		{
 			std::cout << "bye...\n";
 			break;
 		}
 
 		// attempts to find the character
-		int pos = lowercased.find(usr_input);
+		size_t pos = lowercased.find(user_input);
 
 		// if character exists
-		if (pos != -1)
+		if (pos != std::string::npos)
 		{
 			// check if given non-repeated character
 			if (chars_already_guessed[pos] != 1)
@@ -150,47 +147,45 @@ int main()
 				update_letters_used(chars_already_guessed, pos);
 				fill_letter(word_copy, hangman, pos);
 
-				display_next_combo_name(s_tries, s_combos, combo_length);
-				s_tries++;
+				display_next_combo_name(correct_letters_guessed, success_combo);
+				correct_letters_guessed++;
 
-				// check for duplicates
-				int pos2 = lowercased.find(usr_input, pos + 1);
+				size_t duplicate = lowercased.find(user_input, pos + 1);
 
-				// check if duplicate was found
-				if (pos2 != -1)
+				if (duplicate != std::string::npos)
 				{
-					update_letters_used(chars_already_guessed, pos2);
-					fill_letter(word_copy, hangman, pos2);
+					update_letters_used(chars_already_guessed, duplicate);
+					fill_letter(word_copy, hangman, duplicate);
 
-					display_next_combo_name(s_tries, s_combos, combo_length);
-					s_tries++;
+					display_next_combo_name(correct_letters_guessed, success_combo);
+					correct_letters_guessed++;
 				}
 			}
 			else
 			{
 				std::cout << "You've guessed that already, try again\n\n";
-				f_tries++;
+				failed_attempts++;
 			}
 		}
-		else if (isdigit(usr_input))
+		else if (isdigit(user_input))
 		{
-			display_next_combo_name(f_tries, f_combos, combo_length);
-			f_tries++;
+			display_next_combo_name(failed_attempts, failed_combos);
+			failed_attempts++;
 		}
 		else
 		{
-			display_next_combo_name(f_tries, f_combos, combo_length);
-			f_tries++;
+			display_next_combo_name(failed_attempts, failed_combos);
+			failed_attempts++;
 		}
 
-		if (s_tries == len_of_word)
+		if (correct_letters_guessed == len_of_word)
 		{
 			std::cout << word << " is the word, You WIN!!\n";
 			break;
 		}
 	}
 
-	if (f_tries == tries)
+	if (failed_attempts == tries)
 		std::cout << "Better luck next time\n";
 
 	return 0;
