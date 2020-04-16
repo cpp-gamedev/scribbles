@@ -59,7 +59,7 @@ void ask_for_input(char* dest)
 	std::cout << "> ";
 	std::cin >> word;
 
-	assert(!word.empty());
+	assert(!word.empty() && "I need a letter though");
 	char first_letter = word.at(0);
 	*dest = tolower(first_letter);
 	std::cout << "\n";
