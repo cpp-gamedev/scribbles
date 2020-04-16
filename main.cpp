@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <random>
+#include <assert.h>
 
 namespace
 {
@@ -16,9 +17,9 @@ size_t randomRange(size_t min, size_t max)
 	return dist(engine);
 }
 
-std::string to_lowercase(std::string_view const word)
+std::string to_lowercase(const std::string_view word)
 {
-	std::string lowercased = word.begin();
+	std::string lowercased(word);
 	std::transform(word.begin(), word.end(), lowercased.begin(), tolower);
 	return lowercased;
 }
@@ -57,7 +58,10 @@ void ask_for_input(char* dest)
 	std::string word;
 	std::cout << "> ";
 	std::cin >> word;
-	*dest = word[0];
+
+	assert(!word.empty());
+	char first_letter = word.at(0);
+	*dest = tolower(first_letter);
 	std::cout << "\n";
 }
 
@@ -66,12 +70,12 @@ void update_letters_used(std::vector<int>& score, size_t pos)
 	score[pos]++;
 }
 
-void fill_letter(std::string const& word, std::string& hangman, size_t pos)
+void fill_letter(const std::string& word, std::string& hangman, size_t pos)
 {
 	hangman[pos] = word[pos];
 }
 
-void display_next_combo_name(size_t tries, std::vector<std::string> const& combolist)
+void display_next_combo_name(size_t tries, const std::vector<std::string>& combolist)
 {
 	size_t combolist_size = combolist.size();
 
@@ -97,18 +101,18 @@ int main()
 	// combo system
 	// combo names displayed when letter is correctly guessed
 	std::stringstream success_combo_names("NICE! ALRIGHT! YESS! AMAZING!");
-	std::vector<std::string> const success_combo = initialize_combolist(success_combo_names);
+	const std::vector<std::string> success_combo = initialize_combolist(success_combo_names);
 
 	// combo names displayed when letter is not correctly guessed
 	std::stringstream failed_combo_names("ARG! DAMMIT! DARN! NOO!");
-	std::vector<std::string> const failed_combos = initialize_combolist(failed_combo_names);
+	const std::vector<std::string> failed_combos = initialize_combolist(failed_combo_names);
 
 	// Word to be guessed
-	std::string_view const word = "Oxygen";
+	const std::string_view word = "Oxygen";
 	const size_t len_of_word = word.size();
 
 	// used fill a letter in hangman
-	std::string const word_copy(word);
+	const std::string word_copy(word);
 
 	// # of tries before game over
 	const size_t tries = randomRange(len_of_word, len_of_word + 10);
@@ -186,7 +190,9 @@ int main()
 	}
 
 	if (failed_attempts == tries)
+	{
 		std::cout << "Better luck next time\n";
+	}
 
 	return 0;
 }
