@@ -37,13 +37,12 @@ std::vector<std::string> initialize_combolist(std::stringstream& combo_names)
 	return combo_list;
 }
 
-std::vector<std::string> initialize_wordlist(std::string wordlist_path)
+void initialize_wordlist(std::string wordlist_path, std::vector<std::string>& words)
 {
 	std::ifstream wordlist;
 	wordlist.open(wordlist_path, std::ios_base::in);
 
 	std::string current_line = "";
-	std::vector<std::string> words;
 
 	if (wordlist.is_open())
 	{
@@ -53,8 +52,6 @@ std::vector<std::string> initialize_wordlist(std::string wordlist_path)
 			words.push_back(current_line);
 		}
 	}
-
-	return words;
 }
 
 void display_rules()
@@ -128,7 +125,8 @@ int main()
 	std::stringstream failed_combo_names("ARG! DAMMIT! DARN! NOO!");
 	const std::vector<std::string> failed_combos = initialize_combolist(failed_combo_names);
 
-	std::vector<std::string> wordlist{initialize_wordlist("words.txt")};
+	std::vector<std::string> wordlist;
+	initialize_wordlist("words.txt", wordlist);
 
 	// Word to be guessed
 	const size_t random_word_index = randomRange(0, wordlist.size());
