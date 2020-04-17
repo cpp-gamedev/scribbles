@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <random>
 #include <assert.h>
+#include <fstream>
 
 namespace
 {
@@ -34,6 +35,26 @@ std::vector<std::string> initialize_combolist(std::stringstream& combo_names)
 	}
 
 	return combo_list;
+}
+
+std::vector<std::string> initialize_wordlist(std::string wordlist_path)
+{
+	std::ifstream wordlist;
+	wordlist.open(wordlist_path, std::ios_base::in);
+
+	std::string current_line = "";
+	std::vector<std::string> words;
+
+	if (wordlist.is_open())
+	{
+		while (wordlist.good())
+		{
+			getline(wordlist, current_line);
+			words.push_back(current_line);
+		}
+	}
+
+	return words;
 }
 
 void display_rules()
@@ -107,15 +128,19 @@ int main()
 	std::stringstream failed_combo_names("ARG! DAMMIT! DARN! NOO!");
 	const std::vector<std::string> failed_combos = initialize_combolist(failed_combo_names);
 
+	std::vector<std::string> wordlist{initialize_wordlist("words.txt")};
+
 	// Word to be guessed
-	const std::string_view word = "Oxygen";
+	const size_t random_word_index = randomRange(0, wordlist.size());
+	const std::string random_word = wordlist[random_word_index];
+	const std::string_view word = random_word;
 	const size_t len_of_word = word.size();
 
 	// used fill a letter in hangman
 	const std::string word_copy(word);
 
 	// # of tries before game over
-	const size_t tries = randomRange(len_of_word, len_of_word + 10);
+	const size_t tries = randomRange(len_of_word, (len_of_word + 20));
 
 	// used to check if character guessed exists in word
 	const std::string lowercased = to_lowercase(word);
