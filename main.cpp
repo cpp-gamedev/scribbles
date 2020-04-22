@@ -7,6 +7,9 @@
 #include <random>
 #include <assert.h>
 #include <fstream>
+#include <filesystem>
+
+#include "lib/env.h"
 
 namespace
 {
@@ -37,21 +40,23 @@ std::vector<std::string> initialize_combolist(std::stringstream& combo_names)
 	return combo_list;
 }
 
-void initialize_wordlist(std::string wordlist_path, std::vector<std::string>& words)
+std::vector<std::string> initialize_wordlist(const std::filesystem::path& wordlist_path)
 {
 	std::ifstream wordlist;
+	std::vector<std::string> words;
 	wordlist.open(wordlist_path, std::ios_base::in);
 
 	std::string current_line = "";
 
-	if (wordlist.is_open())
+	while (wordlist.good())
 	{
-		while (wordlist.good())
-		{
-			getline(wordlist, current_line);
-			words.push_back(current_line);
-		}
+		getline(wordlist, current_line);
+		words.push_back(current_line);
 	}
+
+	wordlist.close();
+
+	return words;
 }
 
 void display_rules()
@@ -110,6 +115,13 @@ void display_next_combo_name(size_t tries, const std::vector<std::string>& combo
 
 int main()
 {
+	Env finder(std::filesystem::current_path());
+
+	PathSearch to_find;
+	to_find.push_back(std::filesystem::path("data/words.txt"));
+
+	std::filesystem::path wordlist_path = finder.findUpwards(finder.GetExeDirectory(), to_find, 5);
+
 	char user_input = ' ';
 
 	size_t failed_attempts = 0;
@@ -119,26 +131,34 @@ int main()
 	// combo system
 	// combo names displayed when letter is correctly guessed
 	std::stringstream success_combo_names("NICE! ALRIGHT! YESS! AMAZING!");
-	const std::vector<std::string> success_combo = initialize_combolist(success_combo_names);
+	const std::vector<std::string> success_combo{initialize_combolist(success_combo_names)};
 
 	// combo names displayed when letter is not correctly guessed
 	std::stringstream failed_combo_names("ARG! DAMMIT! DARN! NOO!");
-	const std::vector<std::string> failed_combos = initialize_combolist(failed_combo_names);
+	const std::vector<std::string> failed_combos{initialize_combolist(failed_combo_names)};
 
 	std::vector<std::string> wordlist;
-	initialize_wordlist("words.txt", wordlist);
+
+	if (!wordlist_path.empty())
+	{
+		wordlist = initialize_wordlist(wordlist_path);
+	}
+	else
+	{
+		std::cout << "Unable to locate wordlist\nExiting...\n";
+		return 1;
+	}
 
 	// Word to be guessed
-	const size_t random_word_index = randomRange(0, wordlist.size());
-	const std::string random_word = wordlist[random_word_index];
-	const std::string_view word = random_word;
+	const size_t random_word_idx = randomRange(0, wordlist.size());
+	const std::string_view word = wordlist.at(random_word_idx);
 	const size_t len_of_word = word.size();
 
 	// used fill a letter in hangman
 	const std::string word_copy(word);
 
 	// # of tries before game over
-	const size_t tries = randomRange(len_of_word, (len_of_word + 20));
+	const size_t tries = len_of_word + 10;
 
 	// used to check if character guessed exists in word
 	const std::string lowercased = to_lowercase(word);
@@ -179,13 +199,15 @@ int main()
 
 				size_t duplicate = lowercased.find(user_input, pos + 1);
 
-				if (duplicate != std::string::npos)
+				while (duplicate != std::string::npos)
 				{
 					update_letters_used(chars_already_guessed, duplicate);
 					fill_letter(word_copy, hangman, duplicate);
 
 					display_next_combo_name(correct_letters_guessed, success_combo);
 					correct_letters_guessed++;
+
+					duplicate = lowercased.find(user_input, duplicate += 1);
 				}
 			}
 			else
