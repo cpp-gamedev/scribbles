@@ -14,9 +14,11 @@ set(NAME scribbles)
 
 project(${NAME})
 
-add_executable(${NAME}
-	main.cpp
-)
+add_subdirectory(lib)
+
+add_executable(${NAME} main.cpp)
+
+target_link_libraries(${NAME} PUBLIC "${NAME}Library" stdc++fs)
 
 set(COMPILE_OPTIONS -Wextra -Werror=return-type)
 target_compile_options(${NAME} PUBLIC ${COMPILE_OPTIONS})
