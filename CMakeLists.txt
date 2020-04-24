@@ -11,14 +11,19 @@ endif()
 set(BUILD_CONFIG Debug)
 set(CMAKE_BUILD_TYPE ${BUILD_CONFIG})
 set(NAME scribbles)
+set(CLASSNAME "${NAME}ClassFiles")
 
 project(${NAME})
 
-add_subdirectory(lib)
-
 add_executable(${NAME} main.cpp)
 
-target_link_libraries(${NAME} PUBLIC "${NAME}Library" stdc++fs)
+add_library(
+    ${CLASSNAME}
+    env.cpp
+	env.hpp
+)
+
+target_link_libraries(${NAME} PUBLIC ${CLASSNAME} stdc++fs)
 
 set(COMPILE_OPTIONS -Wextra -Werror=return-type)
 target_compile_options(${NAME} PUBLIC ${COMPILE_OPTIONS})
