@@ -9,7 +9,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "lib/env.h"
+#include "env.hpp"
 
 namespace
 {
@@ -53,8 +53,6 @@ std::vector<std::string> initialize_wordlist(const std::filesystem::path& wordli
 		getline(wordlist, current_line);
 		words.push_back(current_line);
 	}
-
-	wordlist.close();
 
 	return words;
 }
@@ -113,14 +111,27 @@ void display_next_combo_name(size_t tries, const std::vector<std::string>& combo
 }
 } // namespace
 
-int main()
+int main(std::int32_t argc, char** argv)
 {
-	Env finder(std::filesystem::current_path());
+	AssetsManagr::env finder(argv[1]);
 
-	PathSearch to_find;
-	to_find.push_back(std::filesystem::path("data/words.txt"));
+	AssetsManagr::PathSearch to_find{"data/words.txt"};
 
 	std::filesystem::path wordlist_path = finder.findUpwards(finder.GetExeDirectory(), to_find, 5);
+
+	std::vector<std::string> wordlist;
+
+	if (!wordlist_path.empty())
+	{
+		wordlist = initialize_wordlist(wordlist_path);
+	}
+	else
+	{
+		std::cout << stderr
+				  << " FATAL_ERROR: COULD NOT FIND REQUIRED DATA\n(Searched upwards from /path/to/exe)!\nMissing: " << to_find.at(0)
+				  << '\n';
+		return 1;
+	}
 
 	char user_input = ' ';
 
@@ -136,18 +147,6 @@ int main()
 	// combo names displayed when letter is not correctly guessed
 	std::stringstream failed_combo_names("ARG! DAMMIT! DARN! NOO!");
 	const std::vector<std::string> failed_combos{initialize_combolist(failed_combo_names)};
-
-	std::vector<std::string> wordlist;
-
-	if (!wordlist_path.empty())
-	{
-		wordlist = initialize_wordlist(wordlist_path);
-	}
-	else
-	{
-		std::cout << "Unable to locate wordlist\nExiting...\n";
-		return 1;
-	}
 
 	// Word to be guessed
 	const size_t random_word_idx = randomRange(0, wordlist.size());
