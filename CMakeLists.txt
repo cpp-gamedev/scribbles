@@ -11,17 +11,11 @@ endif()
 set(BUILD_CONFIG Debug)
 set(CMAKE_BUILD_TYPE ${BUILD_CONFIG})
 set(NAME scribbles)
-set(CLASSNAME "${NAME}ClassFiles")
+set(SOURCES env.cpp env.hpp)
 
 project(${NAME})
 
-add_executable(${NAME} main.cpp)
-
-add_library(
-    ${CLASSNAME}
-    env.cpp
-	env.hpp
-)
+add_executable(${NAME} main.cpp ${SOURCES})
 
 target_link_libraries(${NAME} PUBLIC ${CLASSNAME} stdc++fs)
 
