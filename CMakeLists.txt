@@ -11,12 +11,13 @@ endif()
 set(BUILD_CONFIG Debug)
 set(CMAKE_BUILD_TYPE ${BUILD_CONFIG})
 set(NAME scribbles)
+set(SOURCES env.cpp env.hpp)
 
 project(${NAME})
 
-add_executable(${NAME}
-	main.cpp
-)
+add_executable(${NAME} main.cpp ${SOURCES})
+
+target_link_libraries(${NAME} PUBLIC ${CLASSNAME} stdc++fs)
 
 set(COMPILE_OPTIONS -Wextra -Werror=return-type)
 target_compile_options(${NAME} PUBLIC ${COMPILE_OPTIONS})
