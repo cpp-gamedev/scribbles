@@ -113,7 +113,7 @@ void display_next_combo_name(size_t tries, const std::vector<std::string>& combo
 
 int main(std::int32_t argc, char** argv)
 {
-	AssetsManagr::env finder(argv[1]);
+	AssetsManagr::env finder(argv[0]);
 
 	AssetsManagr::PathSearch to_find{"data/words.txt"};
 
