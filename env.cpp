@@ -29,5 +29,5 @@ std::filesystem::path AssetsManagr::env::findUpwards(const std::filesystem::path
 		return {};
 	}
 
-	return findUpwards(leaf.parent_path(), paths_to_search, height -= 1);
+	return findUpwards(leaf.parent_path(), paths_to_search, --height);
 }

@@ -88,7 +88,7 @@ void ask_for_input(char* dest)
 
 void update_letters_used(std::vector<int>& score, size_t pos)
 {
-	score[pos]++;
+	++score[pos];
 }
 
 void fill_letter(const std::string& word, std::string& hangman, size_t pos)
@@ -194,9 +194,9 @@ int main(std::int32_t argc, char** argv)
 				fill_letter(word_copy, hangman, pos);
 
 				display_next_combo_name(correct_letters_guessed, success_combo);
-				correct_letters_guessed++;
+				++correct_letters_guessed;
 
-				size_t duplicate = lowercased.find(user_input, pos + 1);
+				size_t duplicate = lowercased.find(user_input, ++pos);
 
 				while (duplicate != std::string::npos)
 				{
@@ -204,26 +204,26 @@ int main(std::int32_t argc, char** argv)
 					fill_letter(word_copy, hangman, duplicate);
 
 					display_next_combo_name(correct_letters_guessed, success_combo);
-					correct_letters_guessed++;
+					++correct_letters_guessed;
 
-					duplicate = lowercased.find(user_input, duplicate += 1);
+					duplicate = lowercased.find(user_input, ++duplicate);
 				}
 			}
 			else
 			{
 				std::cout << "You've guessed that already, try again\n\n";
-				failed_attempts++;
+				++failed_attempts;
 			}
 		}
 		else if (isdigit(user_input))
 		{
 			display_next_combo_name(failed_attempts, failed_combos);
-			failed_attempts++;
+			++failed_attempts;
 		}
 		else
 		{
 			display_next_combo_name(failed_attempts, failed_combos);
-			failed_attempts++;
+			++failed_attempts;
 		}
 
 		if (correct_letters_guessed == len_of_word)
