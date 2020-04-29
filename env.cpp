@@ -18,7 +18,8 @@ std::filesystem::path AssetsManagr::env::findUpwards(const std::filesystem::path
 		auto path = leaf / p;
 		if (std::filesystem::is_directory(path) || std::filesystem::is_regular_file(path))
 		{
-			return path.parent_path() / path;
+			std::filesystem::path  = leaf.filename() == "." ? leaf.parent_path() : leaf;
+			return name / p;
 		}
 	}
 
